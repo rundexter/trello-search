@@ -5,22 +5,23 @@
     //Required. Inputs the module expects.
     "inputs": [
         //e.g.
-        /*
         {
-            "id": "from",
-            "title":"From"
+            "id": "query",
+            "title":"Query"
+        },
+        {
+            "id": "idOrganizations",
+            "title":"Organization Ids"
         }
-        */
     ],
     //Required. Outputs the module emits.
     "outputs": [
       //e.g.
-      /*
         {
-            "id": "from",
-            "title":"From"
+            "id": "results",
+            "title":"Results"
         }
-      */
     ],
+    "icon": "trello",
     "title": "Trello Search" /* Required.A display name for the module */
 }
