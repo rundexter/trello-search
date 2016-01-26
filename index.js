@@ -18,17 +18,6 @@ var trello = require('node-trello'),
         }
     };
 module.exports = {
-    authOptions: function (dexter) {
-        if (!dexter.environment('trello_api_key') || !dexter.environment('trello_token')) {
-            this.fail('A [trello_api_key] or [trello_token] environment variables are required for this module');
-            return false;
-        } else {
-            return {
-                api_key: dexter.environment('trello_api_key'),
-                token: dexter.environment('trello_token')
-            }
-        }
-    },
     /**
      * The main entry point for the Dexter module
      *
@@ -36,11 +25,8 @@ module.exports = {
      * @param {AppData} dexter Container for all data used in this workflow.
      */
     run: function(step, dexter) {
-        var auth = this.authOptions(dexter);
-
-        if (!auth) return;
-
-        var t = new trello(auth.api_key, auth.token),
+        var credentials = dexter.provider('trello').credentials(),
+            t = new trello(_.get(credentials, 'consumer_key'), _.get(credentials, 'access_token')),
             inputs = util.pickInputs(step, pickInputs),
             validateErrors = util.checkValidateErrors(inputs, pickInputs);
 

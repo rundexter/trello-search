@@ -22,7 +22,7 @@ module.exports = {
         // map template keys
         _.map(templateInputs, function (templateValue, templateKey) {
 
-            var outputValueByKey = _.get(output, templateValue.keyName || templateValue, undefined);
+            var outputValueByKey = _.get(output, templateValue.key || templateValue, undefined);
             if (_.isUndefined(outputValueByKey)) {
                 result = _.isEmpty(result)? undefined : result;
                 return;
@@ -42,7 +42,7 @@ module.exports = {
                     result = _.isEmpty(result)? mapPickArrays : _.merge(result, mapPickArrays);
 
                 } else {
-                    result[templateKey] = this.pickResult(outputValueByKey, templateValue.fields);
+                    result[templateKey] = this.pickOutputs(outputValueByKey, templateValue.fields);
                 }
             } else {
                 _.set(result, templateKey, outputValueByKey);
@@ -85,12 +85,6 @@ module.exports = {
         return resultObject;
     },
 
-    /**
-     * Checking validation errors
-     * @param inputs
-     * @param templateInputs
-     * @returns {*} - Validation errors or false
-     */
     checkValidateErrors: function (inputs, templateInputs) {
         var noValid = {};
 
@@ -98,6 +92,7 @@ module.exports = {
             var keyObjName = keyObj.key || keyObj,
                 inputValue = _.get(inputs, keyObjName),
 
+                keyObjEnum = _.get(keyObj, 'validate.enum'),
                 keyObjValidate = _.get(keyObj, 'validate.check'),
                 keyObjError = _.get(keyObj, 'validate.error') || 'Validate error for field '.concat(keyObjName);
 
@@ -113,6 +108,9 @@ module.exports = {
                 }
             }
 
+            if (inputValue !== null && inputValue !== undefined && keyObjEnum && _.isArray(keyObjEnum) && (keyObjEnum.indexOf(inputValue) === -1))
+                noValid[keyObjName] = 'Field [' + keyObjName + '] value not in (' + keyObjEnum.join() + ').';
+
             if ((inputValue === null || inputValue === undefined) && _.get(keyObj, 'validate.req') === true)
                 noValid[keyObjName] = 'Field [' + keyObjName + '] is required.';
 
@@ -123,10 +121,10 @@ module.exports = {
 
     _validationRules: {
         /**
-         * URL validation
-         * @param url
-         * @returns {boolean}
-         */
+        * URL validation
+        * @param url
+        * @returns {*}
+        */
         checkUrl: function (url) {
             var expression = /[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/gi;
             var regex = new RegExp(expression);
@@ -134,10 +132,10 @@ module.exports = {
             return url.match(regex) ? true : false;
         },
         /**
-         * Alphanumeric validation
-         * @param str
-         * @returns {boolean}
-         */
+        * Alphanumeric validation
+        * @param str
+        * @returns {boolean}
+        */
         checkAlphanumeric: function (str) {
             var expression = /^[a-z0-9]+$/i;
             var regex = new RegExp(expression);
@@ -147,7 +145,7 @@ module.exports = {
     },
 
     /**
-     * System func for pickResult.
+     * System func for pickOutputs.
      *
      * @param mapValue
      * @param templateKey
@@ -160,7 +158,7 @@ module.exports = {
             result = templateKey === '-'? [] : {};
 
         _.map(mapValue, function (inOutArrayValue) {
-            var pickValue = this.pickResult(inOutArrayValue, templateObject.fields);
+            var pickValue = this.pickOutputs(inOutArrayValue, templateObject.fields);
 
             if (pickValue !== undefined)
                 arrayResult.push(pickValue);
